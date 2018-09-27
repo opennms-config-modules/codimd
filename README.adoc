@@ -1,0 +1,71 @@
+= CodiMD data performance data collection
+
+This repository contains the configuration to use link:http://www.opennms.org[OpenNMS] collecting performance metrics provided through the status information from link:CodiMD[https://github.com/hackmdio/codimd].
+
+== Requirements
+
+* Access to CodiMD with status API
+* OpenNMS Horizon/Meridian
+* Provision your CodiMD node into OpenNMS for monitoring
+* The config example has OpenNMS installed in `/opt/opennms`, on Debian/Ubuntu change the path accordingly to `/usr/share/opennms`
+
+== Install data collection configuration
+
+Checkout this repository with git or copy the files manually using the GitHub raw link to download the configuration files.
+
+.Install configuration for metrics collection and RRD graph definitions
+[source, bash]
+----
+git clone https://github.com/opennms-config-modules/codimd.git
+cd codimd
+cp snmp-graph.properties.d/codimd-graph.properties /opt/opennms/etc/snmp-graph.properties.d
+cp xml-datacollection/codimd-status.xml /opt/opennms/etc/xml-datacollection
+----
+
+== Configure Collectd
+
+Add the following lines `collectd-configuration.xml` in the in the default installed `example1` package.
+The `collector service` needs to be added on the very end of the file, it tells OpenNMS to the XML collector for this type of service.
+Enable the _JSON_ Handler to allow parsing the output accordingly.
+
+.Create a new collection service for the CodiMD status metrics
+[source, xml]
+----
+<service name="JSON-CodiMD" interval="300000" user-defined="false" status="on">
+    <parameter key="collection" value="codimd-status" />
+    <parameter key="handler-class" value="org.opennms.protocols.json.collector.DefaultJsonCollectionHandler"/>
+</service>
+
+<collector service="JSON-CodiMD" class-name="org.opennms.protocols.xml.collector.XmlCollector"/>
+----
+
+Create the `xml-datacollection-config.xml` which defines RRD configuration.
+
+[source, xml]
+----
+<xml-datacollection-config rrdRepository="/opt/opennms/share/rrd/snmp/" <1>
+                           xmlns="http://xmlns.opennms.org/xsd/config/xml-datacollection">
+    <xml-collection name="codimd-status">
+        <rrd step="300">
+            <rra>RRA:AVERAGE:0.5:1:2016</rra>
+            <rra>RRA:AVERAGE:0.5:12:1488</rra>
+            <rra>RRA:AVERAGE:0.5:288:366</rra>
+            <rra>RRA:MAX:0.5:288:366</rra>
+            <rra>RRA:MIN:0.5:288:366</rra>
+        </rrd>
+        <xml-source url="https://codimd-ip/status">
+            <import-groups>xml-datacollection/codimd-status.xml</import-groups>
+        </xml-source>
+    </xml-collection>
+</xml-datacollection-config>
+----
+<1> OpenNMS home relative path to persist RRD files
+<2> URL to CodiMD status service
+<3> Instead of `codimd-ip` you can also use `{ipaddr}` which is replaced with the IP interface address of the assigned `JSON-CodiMD` service
+<4> Include pre-configured metrics configuration for data collection
+
+Restart OpenNMS and provision a service on your nodes IP interface named `JSON-CodiMD`.
+
+== Author
+
+ronny@opennms.org

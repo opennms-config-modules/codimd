@@ -1,0 +1,13 @@
+<xml-groups>
+    <xml-group name="codimd-status" resource-type="node" resource-xpath="/">
+        <xml-object name="cmdOnlNotes" type="GAUGE" xpath="onlineNotes"/>
+        <xml-object name="cmdOnlUsers" type="GAUGE" xpath="onlineUsers"/>
+        <xml-object name="cmdDistOnlUsers" type="GAUGE" xpath="distinctOnlineUsers"/>
+        <xml-object name="cmdNotesCount" type="GAUGE" xpath="notesCount"/>
+        <xml-object name="cmdRegUsers" type="GAUGE" xpath="registeredUsers"/>
+        <xml-object name="cmdOnlRegUsers" type="GAUGE" xpath="onlineRegisteredUsers"/>
+        <xml-object name="cmdDistOnlRegUsr" type="GAUGE" xpath="distinctOnlineRegisteredUsers"/>
+        <xml-object name="cmdConSockQueLength" type="GAUGE" xpath="connectionSocketQueueLength"/>
+        <xml-object name="cmdDisConSockQueLth" type="GAUGE" xpath="disconnectSocketQueueLength"/>
+    </xml-group>
+</xml-groups>
